@@ -26,7 +26,7 @@ import { IStatusResult, IAheadBehind, AppFileStatus, WorkingDirectoryStatus as D
 import { Branch as DugiteBranch } from 'dugite-extra/lib/model/branch';
 import { Commit as DugiteCommit, CommitIdentity as DugiteCommitIdentity } from 'dugite-extra/lib/model/commit';
 import { ILogger } from '@theia/core';
-import { Git, GitUtils, Repository, WorkingDirectoryStatus, GitFileChange, GitFileStatus, Branch, Commit, CommitIdentity, GitResult } from '../common';
+import { Git, GitUtils, Repository, WorkingDirectoryStatus, GitFileChange, GitFileStatus, Branch, Commit, CommitIdentity, GitResult, CommitFragment } from '../common';
 import { GitRepositoryManager } from './git-repository-manager';
 import { GitLocator } from './git-locator/git-locator-protocol';
 
@@ -287,6 +287,52 @@ export class DugiteGit implements Git {
         return this.nameStatusParser.parse(repository.localUri, result.stdout.trim().split('\0').filter(item => item && item.length > 0));
     }
 
+    async log(repository: Repository, options?: Git.Options.Log): Promise<CommitFragment[]> {
+        const commits: CommitFragment[] = [];
+        // If remaining commits should be calculated by the backend, then run `git rev-list --count ${fromRevision | HEAD~fromRevision}`.
+        // How to use `mailmap` to map authors: https://www.kernel.org/pub/software/scm/git/docs/git-shortlog.html.
+        // (Probably, this would the responsibility of the `GitHub` extension.)
+        const args = [
+            'log'
+        ];
+        if (options && options.branch) {
+            args.push(options.branch);
+        }
+        if (options) {
+            const range = this.mapRange(options.range);
+            args.push(...[range, '-C', '-M', '-m']);
+        }
+        const maxCount = options && options.maxCount ? options.maxCount : 0;
+        if (Number.isInteger(maxCount) && maxCount > 0) {
+            args.push(...['-n', `${maxCount}`]);
+        }
+        args.push(...['--name-status', '--date=unix', `--format=%n%n%H%n%aE%n%aN%n%ad%n%ar%n%s`, '-z', '--']);
+        if (options && options.uri) {
+            const file = Path.relative(repository.localUri, options.uri);
+            args.push(...[file]);
+        }
+        const blocks = (await this.exec(repository, args)).stdout.split('\n\n').slice(1);
+        blocks.map(block => block.split('\n')).forEach(lines => {
+            const sha = lines.shift() || '';
+            const email = lines.shift() || '';
+            const name = lines.shift() || '';
+            const date = this.toDate(lines.shift());
+            const authorDateRelative = lines.shift() || '';
+            const summary = this.toCommitMessage(lines.shift());
+            const fileChanges = this.nameStatusParser.parse(repository.localUri, (lines.shift() || '').split('\0').map(line => line.trim()).filter(line => line.length > 0));
+            commits.push({
+                sha,
+                author: {
+                    date, email, name
+                },
+                authorDateRelative,
+                summary,
+                fileChanges
+            });
+        });
+        return commits;
+    }
+
     private getCommitish(options?: Git.Options.Show): string {
         if (options && options.commitish) {
             return 'index' === options.commitish ? '' : options.commitish;
@@ -444,6 +490,18 @@ export class DugiteGit implements Git {
             }
         }
         return range;
+    }
+
+    private toCommitMessage(raw: string | undefined): string {
+        return (raw || '').split('\0').shift() || '';
+    }
+
+    private toDate(epochSeconds: string | undefined): Date {
+        const date = new Date(0);
+        if (epochSeconds) {
+            date.setUTCSeconds(Number.parseInt(epochSeconds));
+        }
+        return date;
     }
 
     private getFsPath(repository: Repository | string): string {
