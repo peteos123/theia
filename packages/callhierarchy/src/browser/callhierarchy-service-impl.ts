@@ -99,7 +99,7 @@ export abstract class CallHierarchyServiceImpl implements CallHierarchyService {
             return undefined;
         }
         const symbols = await this.getCallableSymbolsInResource(languageClient, definitionLocation.uri);
-        const definitionSymbol = this.getEnclosingSymbol(symbols, definitionLocation.range);
+        const definitionSymbol = this.getEnclosingRootSymbol(symbols, definitionLocation.range);
         if (!definitionSymbol) {
             return undefined;
         }
@@ -137,7 +137,7 @@ export abstract class CallHierarchyServiceImpl implements CallHierarchyService {
             if (!symbols) {
                 continue;
             }
-            const callerSymbol = this.getEnclosingSymbol(symbols, reference.range);
+            const callerSymbol = this.getEnclosingCallerSymbol(symbols, reference.range);
             if (callerSymbol) {
                 const references = caller2references.get(callerSymbol);
                 if (references) {
@@ -190,15 +190,15 @@ export abstract class CallHierarchyServiceImpl implements CallHierarchyService {
     }
 
     /**
-     * Finds the symbol that encloses the definition range
+     * Finds the symbol that encloses the definition range of the root element
      */
-    protected getEnclosingSymbol(symbols: SymbolInformation[], definition: Range): SymbolInformation | undefined {
-        let bestMatch: SymbolInformation | undefined = undefined;
-        let bestRange: Range | undefined = undefined;
-        for (let candidate of symbols) {
+    protected getEnclosingRootSymbol(symbols: SymbolInformation[], definition: Range): SymbolInformation | undefined {
+        let bestMatch: SymbolInformation | undefined = undefined;
+        let bestRange: Range | undefined = undefined;
+        for (const candidate of symbols) {
             const candidateRange = candidate.location.range;
             if (utils.containsRange(candidateRange, definition)) {
-                if (!bestMatch || this.isBetter(candidateRange, bestRange!)) {
+                if (!bestMatch || this.isBetterRoot(candidateRange, bestRange!)) {
                     bestMatch = candidate;
                     bestRange = candidateRange;
                 }
@@ -208,7 +208,7 @@ export abstract class CallHierarchyServiceImpl implements CallHierarchyService {
     }
 
     /**
-     * Evaluation function for enclosing regions.
+     * Evaluation function for enclosing regions for the root element.
      * As symbols can be nested, we are looking for the one with the smallest region.
      * As we only check regions that contain the definition, that is the one with the
      * latest start position.
@@ -216,12 +216,52 @@ export abstract class CallHierarchyServiceImpl implements CallHierarchyService {
      * and one spanning the entire method including the body. We are only interested
      * in the latter. So if two regions start at the same position the longer one wins
      */
-    protected isBetter(a: Range, b: Range) {
+    protected isBetterRoot(a: Range, b: Range) {
         if (a.start.line > b.start.line) {
             return true;
         }
         if (a.start.line === b.start.line) {
             if (a.start.character > b.start.character) {
+                return true;
+            }
+            if (a.start.character === b.start.character) {
+                if (a.end.line > b.end.line) {
+                    return true;
+                }
+                if (a.end.line === b.end.line) {
+                    if (a.end.character > b.end.character) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Finds the symbol that encloses the definition range of a caller
+     */
+    protected getEnclosingCallerSymbol(symbols: SymbolInformation[], definition: Range): SymbolInformation | undefined {
+        let bestMatch: SymbolInformation | undefined = undefined;
+        let bestRange: Range | undefined = undefined;
+        for (const candidate of symbols) {
+            const candidateRange = candidate.location.range;
+            if (utils.containsRange(candidateRange, definition)) {
+                if (!bestMatch || this.isBetterCaller(candidateRange, bestRange!)) {
+                    bestMatch = candidate;
+                    bestRange = candidateRange;
+                }
+            }
+        }
+        return bestMatch;
+    }
+
+    protected isBetterCaller(a: Range, b: Range) {
+        if (a.start.line < b.start.line) {
+            return true;
+        }
+        if (a.start.line === b.start.line) {
+            if (a.start.character < b.start.character) {
                 return true;
             }
             if (a.start.character === b.start.character) {
