@@ -51,3 +51,20 @@ export function filterUnique(locations: Location[]): Location[] {
     }
     return result;
 }
+
+export function startsLater(a: Range, b: Range) {
+    if (a.start.line > b.start.line) {
+        return true;
+    }
+    if (a.start.line === b.start.line) {
+        if (a.start.character > b.start.character) {
+            return true;
+        }
+        if (a.start.character === b.start.character) {
+            if (a.end.line > b.end.line) {
+                return true;
+            }
+        }
+    }
+    return false;
+}

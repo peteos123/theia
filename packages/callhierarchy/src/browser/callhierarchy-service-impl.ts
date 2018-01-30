@@ -191,6 +191,10 @@ export abstract class CallHierarchyServiceImpl implements CallHierarchyService {
 
     /**
      * Finds the symbol that encloses the definition range of the root element
+     *
+     * As symbols can be nested, we are looking for the one with the smallest region.
+     * As we only check regions that contain the definition, that is the one with the
+     * latest start position.
      */
     protected getEnclosingRootSymbol(symbols: SymbolInformation[], definition: Range): SymbolInformation | undefined {
         let bestMatch: SymbolInformation | undefined = undefined;
@@ -198,44 +202,13 @@ export abstract class CallHierarchyServiceImpl implements CallHierarchyService {
         for (const candidate of symbols) {
             const candidateRange = candidate.location.range;
             if (utils.containsRange(candidateRange, definition)) {
-                if (!bestMatch || this.isBetter(candidateRange, bestRange!)) {
+                if (!bestMatch || utils.startsLater(candidateRange, bestRange!)) {
                     bestMatch = candidate;
                     bestRange = candidateRange;
                 }
             }
         }
         return bestMatch;
-    }
-
-    /**
-     * Evaluation function for enclosing regions for the root element.
-     * As symbols can be nested, we are looking for the one with the smallest region.
-     * As we only check regions that contain the definition, that is the one with the
-     * latest start position.
-     * Some language servers return two symbols for a method (e.g. TS): One spanning the
-     * name and one spanning the entire method including the body. We are only interested
-     * in the latter. So if two regions start at the same position the longer one wins
-     */
-    protected isBetter(a: Range, b: Range) {
-        if (a.start.line > b.start.line) {
-            return true;
-        }
-        if (a.start.line === b.start.line) {
-            if (a.start.character > b.start.character) {
-                return true;
-            }
-            if (a.start.character === b.start.character) {
-                if (a.end.line > b.end.line) {
-                    return true;
-                }
-                if (a.end.line === b.end.line) {
-                    if (a.end.character > b.end.character) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
     }
 
     /**

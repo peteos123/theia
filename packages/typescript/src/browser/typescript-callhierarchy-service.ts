@@ -29,34 +29,13 @@ export class TypeScriptCallHierarchyService extends CallHierarchyServiceImpl {
         for (const candidate of symbols) {
             const candidateRange = candidate.location.range;
             if (utils.containsRange(candidateRange, reference)) {
-                if (!bestMatch || this.isBetterCaller(candidateRange, bestRange!)) {
+                // as opposed to default, find the topmost (earliest) symbol
+                if (!bestMatch || utils.startsLater(bestRange!, candidateRange)) {
                     bestMatch = candidate;
                     bestRange = candidateRange;
                 }
             }
         }
         return bestMatch;
-    }
-
-    protected isBetterCaller(a: Range, b: Range) {
-        if (a.start.line < b.start.line) {
-            return true;
-        }
-        if (a.start.line === b.start.line) {
-            if (a.start.character < b.start.character) {
-                return true;
-            }
-            if (a.start.character === b.start.character) {
-                if (a.end.line > b.end.line) {
-                    return true;
-                }
-                if (a.end.line === b.end.line) {
-                    if (a.end.character > b.end.character) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
     }
 }
