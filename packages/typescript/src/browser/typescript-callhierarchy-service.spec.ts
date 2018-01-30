@@ -10,7 +10,7 @@ import { expect } from 'chai';
 import { TypeScriptCallHierarchyService } from './typescript-callhierarchy-service';
 import { CallHierarchyService } from '@theia/callhierarchy/lib/browser/callhierarchy-service';
 import { MockLanguageClientProvider } from '@theia/callhierarchy/lib/browser/test';
-import { LanguageClientProvider } from '@theia/callhierarchy/lib/browser/language-client-provider';
+import { LanguageClientProvider } from '@theia/languages/lib/browser/language-client-provider';
 import { Location, Range } from 'vscode-languageserver-types';
 import { ILogger } from '@theia/core';
 import { MockLogger } from '@theia/core/lib/common/test/mock-logger';

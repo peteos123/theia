@@ -6,13 +6,13 @@
  */
 
 import { injectable, inject } from "inversify";
-import { ILanguageClient } from '@theia/languages/lib/browser';
+import { ILanguageClient } from '@theia/languages/lib/common/languageclient-services';
+import { LanguageClientProvider } from '@theia/languages/lib/browser/language-client-provider';
 import { ReferencesRequest, ReferenceParams, DocumentSymbolRequest, DefinitionRequest, TextDocumentPositionParams } from 'vscode-base-languageclient/lib/protocol';
 import { DocumentSymbolParams, TextDocumentIdentifier, SymbolInformation, Location, Position, Range, SymbolKind } from 'vscode-languageserver-types';
 import * as utils from './utils';
 import { Definition, Caller } from './callhierarchy';
 import { CallHierarchyService } from './callhierarchy-service';
-import { LanguageClientProvider } from './language-client-provider';
 import { ILogger } from "@theia/core";
 
 @injectable()
@@ -202,7 +202,7 @@ export abstract class CallHierarchyServiceImpl implements CallHierarchyService {
         for (const candidate of symbols) {
             const candidateRange = candidate.location.range;
             if (utils.containsRange(candidateRange, definition)) {
-                if (!bestMatch || utils.startsLater(candidateRange, bestRange!)) {
+                if (!bestMatch || utils.startsAfter(candidateRange, bestRange!)) {
                     bestMatch = candidate;
                     bestRange = candidateRange;
                 }

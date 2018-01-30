@@ -30,7 +30,7 @@ export class TypeScriptCallHierarchyService extends CallHierarchyServiceImpl {
             const candidateRange = candidate.location.range;
             if (utils.containsRange(candidateRange, reference)) {
                 // as opposed to default, find the topmost (earliest) symbol
-                if (!bestMatch || utils.startsLater(bestRange!, candidateRange)) {
+                if (!bestMatch || utils.startsAfter(bestRange!, candidateRange)) {
                     bestMatch = candidate;
                     bestRange = candidateRange;
                 }

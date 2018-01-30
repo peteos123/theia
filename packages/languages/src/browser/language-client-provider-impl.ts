@@ -7,8 +7,8 @@
 
 import { injectable, inject, named } from "inversify";
 import { ContributionProvider } from '@theia/core/lib/common';
-import { LanguageClientContribution } from '@theia/languages/lib/browser/language-client-contribution';
-import { ILanguageClient } from '@theia/languages/lib/common/languageclient-services';
+import { LanguageClientContribution } from './language-client-contribution';
+import { ILanguageClient } from '../common/languageclient-services';
 import { LanguageClientProvider } from './language-client-provider';
 
 @injectable()

@@ -12,8 +12,6 @@ import { WidgetFactory } from '@theia/core/lib/browser';
 import { CALLHIERARCHY_ID } from './callhierarchy';
 import { createHierarchyTreeWidget } from './callhierarchy-tree';
 import { ActiveEditorAccess } from './active-editor-access';
-import { LanguageClientProvider } from './language-client-provider';
-import { LanguageClientProviderImpl } from './language-client-provider-impl';
 
 import { ContainerModule } from "inversify";
 
@@ -21,8 +19,6 @@ import '../../src/browser/style/index.css';
 
 export default new ContainerModule(bind => {
     bind(ActiveEditorAccess).toSelf().inSingletonScope();
-    bind(LanguageClientProviderImpl).toSelf().inSingletonScope();
-    bind(LanguageClientProvider).toDynamicValue(ctx => ctx.container.get(LanguageClientProviderImpl)).inSingletonScope();
 
     bindContributionProvider(bind, CallHierarchyService);
     bind(CallHierarchyServiceProvider).to(CallHierarchyServiceProvider).inSingletonScope();
