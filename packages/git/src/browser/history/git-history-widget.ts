@@ -14,7 +14,7 @@ import URI from "@theia/core/lib/common/uri";
 import { GIT_HISTORY } from './git-history-contribution';
 import { LabelProvider } from '@theia/core/lib/browser/label-provider';
 import { GitRepositoryProvider } from '../git-repository-provider';
-import { GitFileStatus, Git, CommitFragment } from '../../common';
+import { GitFileStatus, Git, CommitWithChanges } from '../../common';
 import { GitBaseWidget } from "../git-base-widget";
 import { GitFileChangeNode } from "../git-widget";
 
@@ -51,13 +51,13 @@ export class GitHistoryWidget extends GitBaseWidget implements StatefulWidget {
         this.options = options;
         const repository = this.repositoryProvider.selectedRepository;
         if (repository) {
-            const commitFragments: CommitFragment[] = await this.git.log(repository, {
+            const changes: CommitWithChanges[] = await this.git.log(repository, {
                 uri: options.uri
             });
             const commits: GitCommitNode[] = [];
-            for (const commitFragment of commitFragments) {
+            for (const change of changes) {
                 const fileChangeNodes: GitFileChangeNode[] = [];
-                for (const fileChange of commitFragment.fileChanges) {
+                for (const fileChange of change.fileChanges) {
                     const fileChangeUri = new URI(fileChange.uri);
                     const [icon, label, description] = await Promise.all([
                         this.labelProvider.getIcon(fileChangeUri),
@@ -70,12 +70,12 @@ export class GitHistoryWidget extends GitBaseWidget implements StatefulWidget {
                     });
                 }
                 commits.push({
-                    authorName: commitFragment.author.name,
-                    authorDate: commitFragment.author.date,
-                    authorEmail: commitFragment.author.email,
-                    authorDateRelative: commitFragment.authorDateRelative,
-                    commitSha: commitFragment.sha,
-                    commitMessage: commitFragment.summary,
+                    authorName: change.author.name,
+                    authorDate: change.author.date,
+                    authorEmail: change.author.email,
+                    authorDateRelative: change.authorDateRelative,
+                    commitSha: change.sha,
+                    commitMessage: change.summary,
                     fileChangeNodes,
                     expanded: false
                 });

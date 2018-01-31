@@ -7,7 +7,7 @@
 
 import { ChildProcess } from 'child_process';
 import { Disposable } from '@theia/core';
-import { Repository, WorkingDirectoryStatus, Branch, GitResult, GitError, GitFileStatus, GitFileChange, CommitFragment } from './git-model';
+import { Repository, WorkingDirectoryStatus, Branch, GitResult, GitError, GitFileStatus, GitFileChange, CommitWithChanges } from './git-model';
 
 /**
  * The WS endpoint path to the Git service.
@@ -443,6 +443,7 @@ export namespace Git {
          * Optional configuration for the `git log` command.
          */
         export interface Log extends Diff {
+
             /**
              * The name of the branch to run the `git log` command. If not specified, then the currently active branch will be used.
              */
@@ -631,7 +632,7 @@ export interface Git extends Disposable {
      * @param repository the repository where the log has to be calculated.
      * @param options optional configuration for further refining the `git log` command execution.
      */
-    log(repository: Repository, options?: Git.Options.Log): Promise<CommitFragment[]>
+    log(repository: Repository, options?: Git.Options.Log): Promise<CommitWithChanges[]>
 
 }
 

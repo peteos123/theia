@@ -100,19 +100,6 @@ export interface GitFileChange {
 
 }
 
-export interface CommitFragment extends Commit {
-
-    /**
-     * The date when the commit was authored.
-     */
-    readonly authorDateRelative: string;
-
-    /**
-     * The number of file changes per commit.
-     */
-    readonly fileChanges: GitFileChange[];
-}
-
 /**
  * An object encapsulating the changes to a committed file.
  */
@@ -250,6 +237,22 @@ export interface Commit {
      */
     readonly parentSHAs?: string[];
 
+}
+
+/**
+ * Representation of a Git commit, plus the changes that were performed in that particular commit.
+ */
+export interface CommitWithChanges extends Commit {
+
+    /**
+     * The date when the commit was authored.
+     */
+    readonly authorDateRelative: string;
+
+    /**
+     * The number of file changes per commit.
+     */
+    readonly fileChanges: GitFileChange[];
 }
 
 /**
