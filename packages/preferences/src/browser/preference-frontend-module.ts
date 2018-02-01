@@ -7,7 +7,7 @@
 
 import { ContainerModule, interfaces, } from 'inversify';
 import { FrontendApplicationContribution } from '@theia/core/lib/browser';
-import { PreferenceService, PreferenceServiceImpl, PreferenceProviders } from "@theia/preferences-api";
+import { PreferenceService, PreferenceServiceImpl, PreferenceProviders } from "@theia/core/lib/browser/preferences-api";
 import { UserPreferenceProvider } from './user-preference-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
 
