@@ -7,16 +7,33 @@
 
 import { injectable, inject } from "inversify";
 import { FrontendApplication, FrontendApplicationContribution } from '@theia/core/lib/browser';
-import { Languages } from '@theia/languages/lib/common';
+import { Languages, CodeLensProvider, CodeLensParams, CodeLens, CancellationToken } from '@theia/languages/lib/common';
 
 @injectable()
 export class MergeConflictsFrontendContribution implements FrontendApplicationContribution {
 
     constructor(
-        @inject(Languages) protected languages: Languages,
+        @inject(Languages) protected readonly languages: Languages,
     ) { }
 
     onStart(app: FrontendApplication): void {
+        if (this.languages.registerCodeLensProvider) {
+            // awaits https://github.com/TypeFox/monaco-languageclient/pull/49
+            // this.languages.registerCodeLensProvider([{ pattern: '.*' }], new MergeConflictsCodeLensProvider());
+            // using this as workaround for now
+            this.languages.registerCodeLensProvider(['plaintext', 'typescript'], new MergeConflictsCodeLensProvider());
+        }
     }
 
+}
+
+class MergeConflictsCodeLensProvider implements CodeLensProvider {
+    async provideCodeLenses(params: CodeLensParams, token: CancellationToken): Promise<CodeLens[]> {
+        console.log('provideCodeLenses');
+        return [];
+    }
+    async resolveCodeLens?(codeLens: CodeLens, token: CancellationToken): Promise<CodeLens> {
+        console.log('resolveCodeLens');
+        return codeLens;
+    }
 }
