@@ -6,10 +6,11 @@
  */
 
 import { ContainerModule } from 'inversify';
-// import { CommandContribution, MenuContribution, bindContributionProvider } from '@theia/core/lib/common';
-// import { OpenHandler, WidgetFactory, FrontendApplicationContribution } from '@theia/core/lib/browser';
+import { FrontendApplicationContribution } from '@theia/core/lib/browser';
+import { MergeConflictsFrontendContribution } from './merge-conflicts-frontend-contribution';
 
 import '../../src/browser/style/index.css';
 
 export default new ContainerModule(bind => {
+    bind(FrontendApplicationContribution).to(MergeConflictsFrontendContribution);
 });
