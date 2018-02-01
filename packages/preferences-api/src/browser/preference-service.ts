@@ -67,6 +67,7 @@ export class PreferenceServiceImpl implements PreferenceService, FrontendApplica
                     this.toDispose.push(preferenceProvider);
                     preferenceProvider.onDidPreferencesChanged(event => this.reconcilePreferences());
                 }
+                this.toDispose.push(this.onPreferenceChangedEmitter);
                 this.reconcilePreferences();
                 resolve();
             });
@@ -108,7 +109,7 @@ export class PreferenceServiceImpl implements PreferenceService, FrontendApplica
         for (const preferenceName of deleted) {
             const oldValue = this.preferences[preferenceName];
             preferenceChanges[preferenceName] = { preferenceName, oldValue };
-            this.preferences[preferenceName] = undefined;
+            delete this.preferences[preferenceName];
         }
         // tslint:disable-next-line:forin
         for (const preferenceName in preferenceChanges) {

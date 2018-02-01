@@ -46,8 +46,12 @@ export function createPreferenceProxy<T extends Configuration>(preferences: Pref
                     });
                 }
             } else {
-                // TODO If it's deleted, fire the default preference
-                onPreferenceChangedEmitter.fire(e);
+                /* Deleted preference, fire the default preference */
+                onPreferenceChangedEmitter.fire({
+                    preferenceName: e.preferenceName,
+                    newValue: configuration[e.preferenceName],
+                    oldValue: e.oldValue
+                });
             }
         }
     }));
