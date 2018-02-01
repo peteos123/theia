@@ -32,11 +32,13 @@ import {
 import { StatusBar, StatusBarImpl } from "./status-bar/status-bar";
 import { LabelParser } from './label-parser';
 import { LabelProvider, LabelProviderContribution, DefaultUriLabelProviderContribution } from "./label-provider";
+import { ThemingCommandContribution, ThemeService } from './theming';
+import { FrontendConnectionStatusService, ApplicationConnectionStatusContribution, ConnectionStatusStatusBarContribution } from './frontend-connection-status';
+import { ConnectionStatusContribution } from '../common/connection-status';
 
 import '../../src/browser/style/index.css';
 import 'font-awesome/css/font-awesome.min.css';
 import "file-icons-js/css/style.css";
-import { ThemingCommandContribution, ThemeService } from './theming';
 
 export const frontendApplicationModule = new ContainerModule((bind, unbind, isBound, rebind) => {
     bind(FrontendApplication).toSelf().inSingletonScope();
@@ -108,6 +110,14 @@ export const frontendApplicationModule = new ContainerModule((bind, unbind, isBo
     bind(LabelProviderContribution).to(DefaultUriLabelProviderContribution).inSingletonScope();
 
     bind(CommandContribution).to(ThemingCommandContribution).inSingletonScope();
+
+    bind(ApplicationConnectionStatusContribution).toSelf().inSingletonScope();
+    bind(ConnectionStatusStatusBarContribution).toSelf().inSingletonScope();
+    bindContributionProvider(bind, ConnectionStatusContribution);
+    bind(FrontendConnectionStatusService).toSelf().inRequestScope();
+    bind(FrontendApplicationContribution).toDynamicValue(ctx => ctx.container.get(FrontendConnectionStatusService));
+    bind(ConnectionStatusContribution).toDynamicValue(ctx => ctx.container.get(ApplicationConnectionStatusContribution)).inSingletonScope();
+    bind(ConnectionStatusContribution).toDynamicValue(ctx => ctx.container.get(ConnectionStatusStatusBarContribution)).inSingletonScope();
 });
 
 const theme = ThemeService.get().getCurrentTheme().id;
