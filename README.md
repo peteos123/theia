@@ -1,3 +1,5 @@
+[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/eclipse-theia/theia)
+
 # Theia - Cloud & Desktop IDE
 
 This is a fork to use [DomTerm](http://domterm.org/) for the terminal
